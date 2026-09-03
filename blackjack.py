@@ -4,12 +4,17 @@ import random
 
 
 blackjack_art = r"""
- ____  _        _    ____ _  __   _   _    ____ _  __
-| __ )| |      / \  / ___| |/ /  | | / \  / ___| |/ /
-|  _ \| |     / _ \| |   | ' /_  | |/ _ \| |   | ' /
-| |_) | |___ / ___ \ |___| . \ |_| / ___ \ |___| . \
-|____/|_____/_/   \_\____|_|\_\___/_/   \_\____|_|\_\
-
+/$$$$$$$  /$$                     /$$                               /$$
+| $$__  $$| $$                    | $$                              | $$
+| $$  \ $$| $$  /$$$$$$   /$$$$$$$| $$   /$$ /$$  /$$$$$$   /$$$$$$$| $$   /$$
+| $$$$$$$ | $$ |____  $$ /$$_____/| $$  /$$/|__/ |____  $$ /$$_____/| $$  /$$/
+| $$__  $$| $$  /$$$$$$$| $$      | $$$$$$/  /$$  /$$$$$$$| $$      | $$$$$$/
+| $$  \ $$| $$ /$$__  $$| $$      | $$_  $$ | $$ /$$__  $$| $$      | $$_  $$
+| $$$$$$$/| $$|  $$$$$$$|  $$$$$$$| $$ \  $$| $$|  $$$$$$$|  $$$$$$$| $$ \  $$
+|_______/ |__/ \_______/ \_______/|__/  \__/| $$ \_______/ \_______/|__/  \__/
+                                      /$$  | $$
+                                     |  $$$$$$/
+                                      \______/
 """
 
 
@@ -27,9 +32,11 @@ player_amount = 0
 dealer_amount = 0
 dealer_bust = False
 player_bust = False
+ace_unshrinked = 0
 
 def deal_card(hand: list[str], amount: int, bust: bool) -> tuple[int, bool]:
     global deck_of_cards
+    global ace_unshrinked
     if len(deck_of_cards) <= 5:
         deck_of_cards = playing_cards.copy()
     card = random.choice(deck_of_cards)
@@ -39,10 +46,12 @@ def deal_card(hand: list[str], amount: int, bust: bool) -> tuple[int, bool]:
         amount += 10
     elif card == "A":
         amount += 11
+        ace_unshrinked += 1
     else:
         amount += int(card)
-    if amount > 21 and "A" in hand:
+    if amount > 21 and ace_unshrinked > 0:
         amount -= 10
+        ace_unshrinked -= 1
     if amount > 21:
         bust = True
     return amount, bust
@@ -50,6 +59,7 @@ def deal_card(hand: list[str], amount: int, bust: bool) -> tuple[int, bool]:
 def deal_card_dealer():
     global dealer_amount
     global deck_of_cards
+    global ace_unshrinked
     if len(deck_of_cards) <= 5:
         deck_of_cards = playing_cards.copy()
     for i in range(2):
@@ -60,12 +70,14 @@ def deal_card_dealer():
             dealer_amount += 10
         elif card == "A":
             dealer_amount += 11
+            ace_unshrinked += 1
         else:
             dealer_amount += int(card)
 
 def deal_card_player():
     global player_amount
     global deck_of_cards
+    global ace_unshrinked
     if len(deck_of_cards) <= 5:
         deck_of_cards = playing_cards.copy()
     for i in range(2):
@@ -76,6 +88,7 @@ def deal_card_player():
             player_amount += 10
         elif card == "A":
             player_amount += 11
+            ace_unshrinked += 1
         else:
             player_amount += int(card)
 
@@ -90,7 +103,8 @@ def stand():
     global dealer_bust
     while dealer_amount < 17:
         dealer_amount, dealer_bust = deal_card(dealer_hand, dealer_amount, dealer_bust)
-    print(f"Dealer's hand: {dealer_hand}")
+    print(f"Player's hand: {player_hand} ({player_amount})")
+    print(f"Dealer's hand: {dealer_hand} ({dealer_amount})")
 
 def outcome():
     stand()
@@ -115,8 +129,9 @@ def main():
     print("Welcome to Blackjack!")
     print(" ")
     while True:
-        command = input("Type 'new game' to start a new game or 'quit' to exit: ")
-        if command == "new game":
+        print(" ")
+        command = input("Press 'Enter' to start a new game or 'quit' to exit: ")
+        if command == "":
             global dealer_hand
             global player_hand
             global player_amount
@@ -131,36 +146,46 @@ def main():
             player_bust = False
             deal_card_dealer()
             deal_card_player()
+            print(" ")
             print(f"Dealer's hand: ['??', {dealer_hand[0]}]")
-            print(f"Player's hand: {player_hand}")
+            print(f"Player's hand: {player_hand} ({player_amount})")
             if player_amount == 21:
+                print(" ")
                 print("Blackjack! You win.")
                 continue
             if dealer_amount == 21:
+                print(" ")
                 print("Dealer got Blackjack! Dealer wins.")
-                print(f"Dealer's hand: {dealer_hand}")
+                print(f"Dealer's hand: {dealer_hand} ({dealer_amount})")
                 continue
 
             while True:
                 if player_bust == True:
                     outcome()
                     break
-                action = input("Type 'hit' to draw a card or 'stand' to stay: ")
+                action = input("Type 'hit' to draw a card or 'stand' to stand: ")
                 if action == "hit":
+                    print(" ")
                     hit()
-                    print(f"Player's hand: {player_hand}")
                     if player_bust == True:
+                        print(f"Player's hand: {player_hand} ({player_amount})")
+                        print(f"Dealer's hand: {dealer_hand} ({dealer_amount})")
+                        print("Bust! You lose.")
                         break
+                    else:
+                        print(f"Player's hand: {player_hand} ({player_amount})")
                 elif action == "stand":
+                    print(" ")
                     outcome()
                     break
                 else:
                     print("Invalid action. Please try again.")
-
+                    print(" ")
 
         elif command == "quit":
             break
         else:
             print("Invalid command. Please try again.")
+            print(" ")
 
 main()
