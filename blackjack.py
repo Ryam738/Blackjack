@@ -1,10 +1,13 @@
 import random
+import os
+
+
 
 
 
 
 blackjack_art = r"""
-/$$$$$$$  /$$                     /$$                               /$$
+/$$$$$$$$  /$$                     /$$                               /$$
 | $$__  $$| $$                    | $$                              | $$
 | $$  \ $$| $$  /$$$$$$   /$$$$$$$| $$   /$$ /$$  /$$$$$$   /$$$$$$$| $$   /$$
 | $$$$$$$ | $$ |____  $$ /$$_____/| $$  /$$/|__/ |____  $$ /$$_____/| $$  /$$/
@@ -33,6 +36,11 @@ dealer_amount = 0
 dealer_bust = False
 player_bust = False
 ace_unshrinked = 0
+
+def clear_screen():
+    # 'nt' represents Windows, everything else is POSIX (Linux/macOS)
+    os.system("cls" if os.name == "nt" else "clear")
+    print(blackjack_art)
 
 def deal_card(hand: list[str], amount: int, bust: bool) -> tuple[int, bool]:
     global deck_of_cards
@@ -109,10 +117,7 @@ def stand():
 def outcome():
     stand()
     if player_bust == True:
-        if dealer_bust == True:
-            print("Push.")
-        else:
-            print("Bust! You lose.")
+        print("Bust! You lose.")
     else:
         if dealer_bust == True:
             print("Dealer busts! You win.")
@@ -124,68 +129,74 @@ def outcome():
             print("You win!")
 
 def main():
-    print(blackjack_art)
-    print(" ")
-    print("Welcome to Blackjack!")
-    print(" ")
     while True:
+        clear_screen()
+        print(" ")
+        print("Welcome to Blackjack!")
         print(" ")
         command = input("Press 'Enter' to start a new game or 'quit' to exit: ")
         if command == "":
-            global dealer_hand
-            global player_hand
-            global player_amount
-            global dealer_amount
-            global dealer_bust
-            global player_bust
-            dealer_hand = []
-            player_hand = []
-            player_amount = 0
-            dealer_amount = 0
-            dealer_bust = False
-            player_bust = False
-            deal_card_dealer()
-            deal_card_player()
-            print(" ")
-            print(f"Dealer's hand: ['??', {dealer_hand[0]}]")
-            print(f"Player's hand: {player_hand} ({player_amount})")
-            if player_amount == 21:
-                print(" ")
-                print("Blackjack! You win.")
-                continue
-            if dealer_amount == 21:
-                print(" ")
-                print("Dealer got Blackjack! Dealer wins.")
-                print(f"Dealer's hand: {dealer_hand} ({dealer_amount})")
-                continue
-
             while True:
-                if player_bust == True:
-                    outcome()
-                    break
-                action = input("Type 'hit' to draw a card or 'stand' to stand: ")
-                if action == "hit":
+                clear_screen()
+                global dealer_hand
+                global player_hand
+                global player_amount
+                global dealer_amount
+                global dealer_bust
+                global player_bust
+                dealer_hand = []
+                player_hand = []
+                player_amount = 0
+                dealer_amount = 0
+                dealer_bust = False
+                player_bust = False
+                deal_card_dealer()
+                deal_card_player()
+                print(" ")
+                print(f"Dealer's hand: ['??', {dealer_hand[0]}]")
+                print(f"Player's hand: {player_hand} ({player_amount})")
+                if player_amount == 21:
                     print(" ")
-                    hit()
-                    if player_bust == True:
-                        print(f"Player's hand: {player_hand} ({player_amount})")
-                        print(f"Dealer's hand: {dealer_hand} ({dealer_amount})")
-                        print("Bust! You lose.")
+                    print("Blackjack! You win.")
+                    break
+                if dealer_amount == 21:
+                    print(" ")
+                    print("Dealer got Blackjack! Dealer wins.")
+                    print(f"Dealer's hand: {dealer_hand} ({dealer_amount})")
+                    break
+
+                while True:
+                    action = input("Type 'hit' to draw a card or 'stand' to stand: ")
+                    if action == "hit":
+                        print(" ")
+                        hit()
+                        if player_bust == True:
+                            print(" ")
+                            outcome()
+                            break
+                        else:
+                            print(f"Player's hand: {player_hand} ({player_amount})")
+                    elif action == "stand":
+                        print(" ")
+                        outcome()
                         break
                     else:
-                        print(f"Player's hand: {player_hand} ({player_amount})")
-                elif action == "stand":
-                    print(" ")
-                    outcome()
+                        print("Invalid action. Please try again.")
+                        print(" ")
+                        continue
+                print(" ")
+                play_again = input("Press 'Enter' to play again or 'quit' for main menu: ")
+                if play_again == "quit":
                     break
                 else:
-                    print("Invalid action. Please try again.")
-                    print(" ")
+                    continue
+
 
         elif command == "quit":
             break
         else:
             print("Invalid command. Please try again.")
             print(" ")
+            continue
 
 main()
