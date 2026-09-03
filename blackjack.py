@@ -1,6 +1,6 @@
 import random
 import os
-
+import sys
 
 
 
@@ -85,6 +85,14 @@ def deal_card_dealer():
         dealer_amount -= 10
         dealer_ace_unshrinked -= 1
 
+def screen(bool: bool):
+    clear_screen()
+    if bool == True:
+        print(f"Dealer's hand: ['??', {dealer_hand[0]}]")
+    else:
+        print(f"Dealer's hand: {dealer_hand} ({dealer_amount})")
+    print(f"Player's hand: {player_hand} ({player_amount})")
+    print(" ")
 
 def deal_card_player():
     global player_amount
@@ -106,6 +114,7 @@ def deal_card_player():
         if player_amount > 21 and player_ace_unshrinked > 0:
             player_amount -= 10
             player_ace_unshrinked -= 1
+
 def hit():
     global player_amount, player_bust, player_ace_unshrinked
     player_amount, player_bust, player_ace_unshrinked = deal_card(
@@ -120,22 +129,20 @@ def stand():
     global dealer_ace_unshrinked
     while dealer_amount < 17:
         dealer_amount, dealer_bust, dealer_ace_unshrinked = deal_card(dealer_hand, dealer_amount, dealer_bust, dealer_ace_unshrinked)
-    print(f"Player's hand: {player_hand} ({player_amount})")
-    print(f"Dealer's hand: {dealer_hand} ({dealer_amount})")
 
 def outcome():
     if player_bust == True:
-        print("Bust! You lose.")
+        return("Bust! You lose.")
     else:
         stand()
         if dealer_bust == True:
-            print("Dealer busts! You win.")
+            return "Dealer busts! You win."
         elif dealer_amount > player_amount:
-            print("Dealer wins!")
+            return "Dealer wins!"
         elif dealer_amount == player_amount:
-            print("Push.")
+            return "Push."
         else:
-            print("You win!")
+            return "You win!"
 
 def main():
     while True:
@@ -145,8 +152,7 @@ def main():
         print(" ")
         command = input("Press 'Enter' to start a new game or 'quit' to exit: ")
         if command == "":
-            while True:
-                clear_screen()
+            while True:  # outer loop
                 global dealer_hand, player_hand, dealer_ace_unshrinked, player_ace_unshrinked
                 global player_amount
                 global dealer_amount
@@ -162,41 +168,51 @@ def main():
                 player_ace_unshrinked = 0
                 deal_card_dealer()
                 deal_card_player()
-                print(" ")
-                print(f"Dealer's hand: ['??', {dealer_hand[0]}]")
-                print(f"Player's hand: {player_hand} ({player_amount})")
                 if player_amount == 21:
-                    print(" ")
+                    screen(False)
                     print("Blackjack! You win.")
-                    break
                 if dealer_amount == 21:
-                    print(" ")
+                    screen(False)
                     print("Dealer got Blackjack! Dealer wins.")
-                    print(f"Dealer's hand: {dealer_hand} ({dealer_amount})")
-                    break
-
-                while True:
+                screen(True)
+                while True: #inner loop
+                    if len(player_hand) == 2 and player_amount == 21 or len(dealer_hand) == 2 and dealer_amount == 21:
+                        screen(False)
+                        if player_amount == 21:
+                            if dealer_amount == 21:
+                                print("Push!")
+                            else:
+                                print("You got Blackjack! You win.")
+                        else:
+                            print("Dealer got Blackjack! Dealer wins.")
+                        break
+                    print(" ")
                     action = input("Type 'hit' to draw a card or 'stand' to stand: ")
                     if action == "hit":
                         hit()
                         if player_bust == True:
-                            print(" ")
-                            outcome()
+                            result = outcome()
+                            screen(False)
+                            print(result)
                             break
-                        else:
-                            print(f"Player's hand: {player_hand} ({player_amount})")
+                        screen(True)
                     elif action == "stand":
-                        print(" ")
-                        outcome()
+                        result = outcome()
+                        screen(False)
+                        print(result)
                         break
+                    elif action == "quit":
+                        os.system("cls" if os.name == "nt" else "clear")
+                        sys.exit()
                     else:
                         print("Invalid action. Please try again.")
                         print(" ")
-                        continue
+                        continue #end of inner loop
                 print(" ")
-                play_again = input("Press 'Enter' to play again or 'quit' for main menu: ")
+                play_again = input("Press 'Enter' to play again or 'quit' to quit: ")
                 if play_again == "quit":
-                    break
+                    os.system("cls" if os.name == "nt" else "clear")
+                    sys.exit()
                 else:
                     continue
 
